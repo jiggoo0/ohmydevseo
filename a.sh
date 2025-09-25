@@ -1,30 +1,22 @@
 #!/bin/bash
-# rename-topup.sh
-# รันจาก root ของโปรเจกต์: ./rename-topup.sh
+# clean-secrets.sh
+# ลบ secrets (เช่น Personal Access Token) ออกจาก git history
+# ใช้กับ GitHub Push Protection
 
-TOPUP_DIR="public/topup"
+# ตรวจสอบ git filter-repo
+if ! command -v git-filter-repo &> /dev/null; then
+    echo "git-filter-repo ไม่พบ! ติดตั้งก่อน เช่น: pip install git-filter-repo"
+    exit 1
+fi
 
-declare -A FILE_MAP=(
-  ["090622-บัตรRZ.png.webp"]="raz-gold.png"
-  ["090638-บัตรRiot.png.webp"]="riot.png"
-  ["090749-บัตรEX.png.webp"]="ex-cash.png"
-  ["090940-บัตรGarena.png.webp"]="garena.png"
-  ["091023-บัตรTrue.png.webp"]="true-wallet.png"
-  ["095333-บัตรStam.png.webp"]="steam.png"
-  ["121738-PUBGไทย.png.webp"]="pubg-thailand.png"
-  ["121909-PUBG-ตปท.png.webp"]="pubg-server.png"
-)
+# Backup ก่อน
+echo "สร้าง backup branch ก่อน..."
+git branch backup-before-secret-clean
 
-echo "เริ่มเปลี่ยนชื่อไฟล์ใน $TOPUP_DIR ..."
+# ลบ secret จากไฟล์ที่ระบุ
+echo "ลบ secret จาก _NoteDev.md และ __.บันทึก.md ..."
+git filter-repo --path _NoteDev.md --replace-text <(echo 'Personal Access Token==>REMOVED')
+git filter-repo --path __.บันทึก.md --replace-text <(echo 'Personal Access Token==>REMOVED')
 
-for OLD_NAME in "${!FILE_MAP[@]}"; do
-  NEW_NAME=${FILE_MAP[$OLD_NAME]}
-  if [ -f "$TOPUP_DIR/$OLD_NAME" ]; then
-    mv "$TOPUP_DIR/$OLD_NAME" "$TOPUP_DIR/$NEW_NAME"
-    echo "เปลี่ยนชื่อ $OLD_NAME -> $NEW_NAME"
-  else
-    echo "ไม่พบไฟล์: $OLD_NAME"
-  fi
-done
-
-echo "เรียบร้อย ✅"
+echo "ลบ secrets เสร็จแล้ว! ตรวจสอบไฟล์ก่อน push"
+echo "ถ้าพร้อม: git push origin main --force"
