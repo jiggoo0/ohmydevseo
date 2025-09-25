@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TKX Shop SPA (Next.js) - Termux/ARM64
 
-## Getting Started
+## 1️⃣ Overview
 
-First, run the development server:
+โปรเจกต์นี้เป็น **Single Page Application (SPA)** สำหรับขายสินค้าตัวอย่าง ใช้ **Next.js 15.5.4**, **TailwindCSS 3.3.x**, **React 19.x**, และรันในสภาวะแวดล้อม **Termux บน Android/ARM64**  
 
+วัตถุประสงค์:  
+- พัฒนาเว็บแบบ SPA ด้วย Next.js บน Termux  
+- รองรับ Dark/Light theme  
+- มีระบบ Cart, Featured Products, Newsletter  
+- ใช้โครงสร้าง `app/` แบบ Next.js App Router  
+
+---
+
+## 2️⃣ Environment Requirements
+
+- **Termux** (Android 10+)  
+- **Node.js >= 20**  
+- **pnpm >= 10.x** (แนะนำเพราะลดปัญหา dependencies ใน ARM64)  
+- Internet สำหรับติดตั้ง dependencies และ fetch image assets  
+
+---
+
+## 3️⃣ Project Structure
+
+. ├── README.md ├── app │   ├── about/page.js │   ├── api/ │   ├── cart/page.js │   ├── components/ │   ├── context/CartContext.js │   ├── data/ │   ├── favicon.ico │   ├── globals.css │   ├── layout.js │   ├── page.js │   └── products/page.js ├── next.config.js ├── node_modules/ ├── package.json ├── package-lock.json ├── pnpm-lock.yaml ├── postcss.config.js ├── public/ └── tailwind.config.js
+
+**หลักการจัดไฟล์:**  
+- `components/` → reusable UI components  
+- `context/` → React context เช่น CartContext  
+- `data/` → static data สำหรับ product/featured items  
+- `api/` → Next.js API routes  
+- `public/` → assets เช่น รูปสินค้าและไอคอน  
+
+---
+
+## 4️⃣ Important Technical Notes
+
+### 4.1 CSS & Tailwind
+- ใช้ `globals.css` ที่ path **ถูกต้องตามไฟล์** เช่น `app/layout.js` import `./globals.css`  
+- Tailwind base/components/utilities ต้อง import ตามลำดับ  
+- Dark mode ใช้ media query `prefers-color-scheme: dark`  
+
+### 4.2 Images
+- รูปภาพสินค้า **ต้องอยู่ใน `public/products/`**  
+- ห้ามเรียก path นอก `public/` เนื่องจาก Next.js SPA บน Termux/ARM64 จะ 404  
+
+### 4.3 Client vs Server
+- ทุก Component ที่ใช้ React hooks เช่น `useCart()` ต้อง **"use client"**  
+- Server Components ห้ามเรียก hooks ของ Client  
+
+### 4.4 Module path
+- ห้ามใช้ relative import ผิด path (`../globals.css`) เพราะ Next.js บน Termux มัก error  
+- ใช้ path ถูกต้องตามโครงสร้างตัวอย่าง  
+
+### 4.5 Next.js Config
+- ห้ามใช้ option ที่ **deprecated/experimental** บน Next.js 15.5.4 เช่น `swcMinify`, `fontLoaders`  
+- ไม่ควรแก้ไข `webpack.cache`  
+
+---
+
+## 5️⃣ Things to Avoid (สิ่งที่ห้ามเด็ดขาด)
+
+1. **ใช้ Node modules ที่ไม่รองรับ ARM64** (เช่นบาง native dependencies)  
+2. **วาง assets นอก `public/`** → จะเกิด 404  
+3. **เรียก useState/useCart จาก Server Components**  
+4. **เปลี่ยน path import globals.css, data หรือ components แบบไม่ตรง**  
+5. **ใช้ next.config.js experimental options ที่ไม่รองรับ**  
+
+---
+
+## 6️⃣ Development Guidelines
+
+- **All components** ต้องเป็น `function components` และ `use client` เมื่อมี hook  
+- **Folder structure** ต้องตรงตามตัวอย่าง  
+- **CSS** ต้องใช้ Tailwind + custom variables ใน `globals.css`  
+- **Images** ต้องวางใน `public/products/` และใช้ path ตรงกับ data objects  
+- **Data** ควร export แบบ named export เช่น `export const products = [...]`  
+- **Build & Run**  
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# ติดตั้ง dependencies
+pnpm install
+
+# รัน development server
 pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# Build production
+pnpm build
+pnpm start
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+7️⃣ Recommended Next Steps
 
-To learn more about Next.js, take a look at the following resources:
+สร้าง component เพิ่มเติม เช่น Hero, CategoryCard, NewsletterForm
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+สร้าง data file สำหรับ category, featured, products
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+ใช้ Context API สำหรับ Cart state
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+8️⃣ Reference & Documentation
+
+Next.js App Router: https://nextjs.org/docs/app/building-your-application/routing
+
+Tailwind CSS: https://tailwindcss.com/docs
+
+React Context: https://react.dev/reference/react/Context
+
+
+
+---
+
+Author: TKX Dev Team
+Environment: Termux/ARM64, Node.js 20+, pnpm 10+
+
