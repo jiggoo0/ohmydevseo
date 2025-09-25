@@ -1,3 +1,4 @@
+// app/data/categories.js
 export const categoriesData = [
   {
     id: "cat1",

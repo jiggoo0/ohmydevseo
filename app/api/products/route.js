@@ -1,11 +1,22 @@
-export async function GET() {
-  const products = [
-    { id: 1, name: "Product 1", price: 10, image: "/next.svg" },
-    { id: 2, name: "Product 2", price: 15, image: "/vercel.svg" },
-    { id: 3, name: "Product 3", price: 20, image: "/window.svg" },
-  ];
+import { products } from "../../data/products";
 
-  return new Response(JSON.stringify(products), {
-    headers: { "Content-Type": "application/json" },
-  });
+export async function GET() {
+  try {
+    if (!products || !Array.isArray(products)) {
+      return new Response(
+        JSON.stringify({ error: "Products data not available" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    return new Response(JSON.stringify(products), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: "Failed to fetch products", details: error.message }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
 }
